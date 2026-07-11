@@ -1,4 +1,4 @@
-r# AI Data Readiness Scorecard
+# AI Data Readiness Scorecard
 ### Is this data actually ready for an AI system to use — or does it just look ready?
 
 *Built specifically against the requirements of a real AI Data Analyst job
