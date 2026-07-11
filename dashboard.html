@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Data Readiness Scorecard — Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root { --navy:#1F4E78; --navy-dark:#163a5c; --accent:#2E86AB; --bg:#f7f9fb; --card:#fff;
+          --text:#1c2b36; --muted:#5b6b76; --border:#e3e8ec; --green:#2e7d55; --amber:#b8860b; --red:#b3441e; }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:32px; }
+  .header { max-width:1100px; margin:0 auto 24px; }
+  .header h1 { font-size:24px; margin:0 0 6px; color:var(--navy-dark); }
+  .header p { color:var(--muted); margin:0; font-size:14px; }
+  .badge { display:inline-block; background:var(--navy); color:#fff; font-size:11px; padding:3px 10px; border-radius:999px; margin-top:10px; }
+  .panels { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .panel { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:16px; }
+  .full { grid-column:1/-1; }
+  .panel h2 { font-size:15px; margin:0 0 4px; color:var(--navy-dark); }
+  .panel .sub { font-size:12px; color:var(--muted); margin-bottom:12px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--border); }
+  th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; }
+  .up { color:var(--green); font-weight:600; }
+  .flag { color:var(--red); font-size:11px; }
+  .note { background:#fff8ec; border:1px solid #f0dca8; border-radius:8px; padding:12px 14px; font-size:13px; color:#6b5117; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>AI Data Readiness Scorecard — Meridian Retail Group</h1>
+  <p>Scoring each Project 1 data source for AI/copilot/agent use — freshness, completeness, consistency, metadata, ownership, governance</p>
+  <span class="badge">Builds directly on the Project 1 pipeline &amp; PII layer</span>
+</div>
+
+<div class="panels">
+  <div class="panel full">
+    <h2>Overall Readiness — Before vs. After Remediation</h2>
+    <div class="sub">Remediation = generating the missing data dictionary, lineage/ownership record, and repeatable checklist — not a cosmetic re-score</div>
+    <canvas id="beforeAfterChart" height="90"></canvas>
+  </div>
+
+  <div class="panel">
+    <h2>Score by Dimension — SQL Source</h2>
+    <canvas id="sqlRadar"></canvas>
+  </div>
+  <div class="panel">
+    <h2>Score by Dimension — NoSQL Source</h2>
+    <canvas id="nosqlRadar"></canvas>
+  </div>
+
+  <div class="panel full">
+    <h2>Open Action Items (honestly not resolved by documentation alone)</h2>
+    <table>
+      <tr><th>Source</th><th>Gap</th><th>Why it's still open</th></tr>
+      <tr><td>NoSQL — support tickets</td><td class="flag">Data steward: TBD</td><td>Lineage is mapped, but no individual/team has formally accepted ownership yet — a checklist can surface this, not resolve it</td></tr>
+      <tr><td>Unstructured — complaint text</td><td class="flag">Data steward: TBD</td><td>Same gap as NoSQL — both trace to the same Customer Support Operations source system</td></tr>
+      <tr><td>NoSQL — support tickets</td><td class="flag">Retention policy: recommended, not confirmed</td><td>Needs governance sign-off before it's an actual policy, not just a suggestion</td></tr>
+    </table>
+    <div class="note">This is deliberate: the scorecard tool documents and scores readiness gaps, it doesn't pretend to close every gap by itself. The two unresolved items above require a real organizational decision (naming a steward), which is outside what an analyst-built checklist can do alone — and that distinction is the point of the exercise.</div>
+  </div>
+</div>
+
+<script>
+const navy='#1F4E78', accent='#2E86AB', green='#2e7d55', muted='#8a97a1';
+
+new Chart(document.getElementById('beforeAfterChart'), {
+  type: 'bar',
+  data: {
+    labels: ['SQL (transactions)', 'NoSQL (support tickets)', 'Unstructured (complaints)'],
+    datasets: [
+      { label: 'Before', data: [7.2, 5.6, 5.5], backgroundColor: muted },
+      { label: 'After remediation', data: [9.3, 7.6, 6.7], backgroundColor: navy },
+    ]
+  },
+  options: { indexAxis: 'y', responsive:true, plugins:{legend:{position:'bottom'}}, scales:{x:{max:10, grid:{color:'#eef1f3'}}} }
+});
+
+new Chart(document.getElementById('sqlRadar'), {
+  type: 'radar',
+  data: {
+    labels: ['Freshness','Completeness','Consistency','Metadata/Docs','Ownership/Lineage','Access/Gov'],
+    datasets: [
+      { label: 'Before', data: [10,10,10,2,2,9], borderColor: muted, backgroundColor:'rgba(138,151,161,0.15)' },
+      { label: 'After', data: [10,10,10,9,8,9], borderColor: navy, backgroundColor:'rgba(31,78,120,0.2)' },
+    ]
+  },
+  options: { responsive:true, scales:{r:{min:0,max:10}}, plugins:{legend:{position:'bottom'}} }
+});
+
+new Chart(document.getElementById('nosqlRadar'), {
+  type: 'radar',
+  data: {
+    labels: ['Freshness','Completeness','Consistency','Metadata/Docs','Ownership/Lineage','Access/Gov'],
+    datasets: [
+      { label: 'Before', data: [10,10,2.8,3,2,6], borderColor: muted, backgroundColor:'rgba(138,151,161,0.15)' },
+      { label: 'After', data: [10,10,2.8,7,4,6], borderColor: accent, backgroundColor:'rgba(46,134,171,0.2)' },
+    ]
+  },
+  options: { responsive:true, scales:{r:{min:0,max:10}}, plugins:{legend:{position:'bottom'}} }
+});
+</script>
+</body>
+</html>
